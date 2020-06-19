@@ -1,0 +1,16 @@
+@import './_variables';
+@import './reset';
+@import './_mixins';
+@import './utility/flex';
+
+.CoveoDateRangePicker {
+  @import './radios';
+  border: 1px solid $medium-grey;
+  border-radius: 2px;
+  .inner-content {
+    font-size: 14px;
+    padding: 12px 20px 5px;
+    @include radio-button-section();
+    @include input-section();
+  }
+}
