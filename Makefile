@@ -13,6 +13,9 @@ setup:
 build:
 	npm run build
 
+watch:
+	npm run watch
+
 serve:
 	./node_modules/.bin/coveops serve \
 		--org-id $(COVEO_ORG_ID) \

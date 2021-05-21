@@ -4,35 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="https://static.cloud.coveo.com/searchui/v2.8864/js/CoveoJsSearch.js"></script>
-    <script src="https://static.cloud.coveo.com/searchui/v2.8864/js/cultures/en.js"></script>
-    <script src="https://static.cloud.coveo.com/searchui/v2.8864/js/templates/templatesNew.js"></script>
+    <script src="https://static.cloud.coveo.com/searchui/v2.9659/js/CoveoJsSearch.js"></script>
+    <script src="https://unpkg.com/@coveops/localization-manager@latest/dist/index.min.js"></script>
+    <script src="https://static.cloud.coveo.com/searchui/v2.9659/js/cultures/fr.js"></script>
+    <script src="https://static.cloud.coveo.com/searchui/v2.9659/js/templates/templatesNew.js"></script>
 
     <script src="config.js"></script>
     <script src="component.js"></script>
     <!-- <script src="components/<name>.js"></script> -->
 
-    <link rel="stylesheet" href="https://static.cloud.coveo.com/searchui/v2.8864/css/CoveoFullSearchNewDesign.css" />
+    <script src="init.js"></script>
+
+    <link rel="stylesheet" href="https://static.cloud.coveo.com/searchui/v2.9659/css/CoveoFullSearchNewDesign.css" />
     <link rel="stylesheet" href="component.css" />
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {    
-            Coveo.SearchEndpoint.configureCloudV2Endpoint(demoConfig.orgId, demoConfig.token, demoConfig.restUri);
             // Coveo.SearchEndpoint.endpoints['default'].options.queryStringArguments.viewAllContent = 'true';
             Coveo.init(document.getElementById('search'), {
                 Analytics: {
                     searchHub: demoConfig.searchHub,
                 }
             });
-    
-            const standaloneSearchBoxRoot = document.querySelector('.CoveoSearchInterface');
-        
-            Coveo.initSearchbox(standaloneSearchBoxRoot, demoConfig.searchUrl, {
-                Analytics: {
-                    searchHub: demoConfig.searchHub,
-                },
-            });
         })
+    </script>
+    <script>
+      CoveoLocalizationManager({
+        "Start": "Début",
+        "End": "Fin",
+        "Today": "Aujourd'hui",
+        "This Week": "Cette semaine",
+        "Last Week": "La semaine dernière",
+        "This Month": "Ce mois-ci",
+    });
     </script>
 </head>
 <body>
@@ -47,6 +51,8 @@
         </div>
         <div class="coveo-main-section">
           <div class="coveo-facet-column">
+            <div class="CoveoDateRangePicker" data-first-day="1" data-format="DD-MM-YYYY" data-input-placeholder="DD-MM-YYYY" data-title="Date" data-lang-code="fr"></div>
+            <div class="CoveoDateRangePicker" data-id='daterange2' data-enable-radio-button="true"  data-title="Date"></div>
             <div class="CoveoDynamicFacet" data-title="Type" data-field="@objecttype" data-tab="All"></div>
             <div class="CoveoDynamicFacet" data-title="FileType" data-field="@filetype" data-tab="All"></div>
             <div class="CoveoDynamicFacet" data-title="Author" data-field="@author" data-tab="All"></div>
@@ -73,8 +79,6 @@
                 <span class="CoveoSort" data-sort-criteria="date descending,date ascending" data-caption="Date"></span>
               </div>
             </div>
-            <div class="CoveoDateRangePicker" data-id='daterange1'></div>
-            <div class="CoveoDateRangePicker" data-id='daterange2' data-enable-radio-button="true"></div>
             <div class="CoveoHiddenQuery"></div>
             <div class="CoveoErrorReport" data-pop-up="false"></div>
             <div class="CoveoResultList" data-layout="list" data-wait-animation="fade" data-auto-select-fields-to-include="true">
