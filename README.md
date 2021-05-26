@@ -56,6 +56,8 @@ The following options can be configured:
 | --- | --- | --- | --- | --- |
 | `id` | No | string | `fieldFrom-fieldTo` | id of the control |
 | `title` | No | string | `NoTitle` | Specifies the title to display at the top of the Component |
+| `startCaption` | No | string | `Start` | Specifies what the caption of "start" should be |
+| `endCaption` | No | string | `End` | Specifies what the caption of "end" should be |
 | `todayCaption` | No | string | `Today` | Specifies what the caption of "today" radio button should be |
 | `thisWeekCaption` | No | string | `This Week` | Specifies what the caption of "thisweek" radio button should be |
 | `lastWeekCaption` | No | string | `Last Week` | Specifies what the caption of "lastweek" radio button should be |
@@ -63,10 +65,26 @@ The following options can be configured:
 | `fieldFrom` | Yes | string | `@sysdate` | Index field to use for the from date |
 | `fieldTo` | Yes | string | `@sysdate` | Index field to use for the to date|
 | `enableRadioButton` | No | boolean | `false` | Show radiobuttons with today, thisweek etc. |
-| `enableCollapse` | No | boolean | `false` | Show expand collapse button |
-| `langCode` | No | string | `en` | Language code |
+| `langCode` | No | string | `en` | Language code. Currently supports English (`en`), French (`fr`), Dutch (`de`) and Spanish (`es` or `es-es`) |
 | `format` | No | string | `YYYY-MM-DD` | Date format to accept |
-| `inputPlaceholder` | No | string | `YYYY-MM-DD` | Date format hint |
+| `inputPlaceholder` | No | string | `YYYY-MM-DD` | A placeholder in the date component input |
+| `firstDay` | No | number | `0` | Defines the first day of the week on the calendar, 0 being Sunday and 6 being Saturday |
+
+## Regarding localization
+
+Since we have many different captions, this is how we perform localization for the form's elements (assuming you set the component `langCode` to `fr`):
+
+```
+    {
+      "Start": "Début", // where "Start" is the value of `startCaption`
+      "End": "Fin", // where "End" is the value of `endCaption`
+      "Today": "Aujourd'hui", // where "Today" is the value of `todayCaption`
+      "This Week": "Cette semaine", // where "This Week" is the value of `thisWeekCaption`
+      "Last Week": "La semaine dernière", // where "Last Week" is the value of `lastWeekCaption`
+      "This Month": "Ce mois-ci", // where "This Month" is the value of `thisMonthCaption`
+      "Title": "Titre", // where "Title" is the value of `title`
+    };
+```
 
 ## Extending
 

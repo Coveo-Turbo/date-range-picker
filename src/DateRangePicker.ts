@@ -129,7 +129,7 @@ export class DateRangePicker extends Component {
 
     inputPlaceholder: ComponentOptions.buildStringOption({ defaultValue: 'YYYY-MM-DD' }),
 
-    firstDay: ComponentOptions.buildNumberOption({ defaultValue: 3}),
+    firstDay: ComponentOptions.buildNumberOption({ defaultValue: 0}),
 
     startCaption: ComponentOptions.buildLocalizedStringOption({defaultValue: 'Start', required: false}),
 
