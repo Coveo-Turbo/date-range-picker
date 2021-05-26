@@ -52,7 +52,7 @@ class RadioOption {
     this.element = $$('div', { className: 'radio-option' });
     this.radioInput = $$('input', { name: 'enabledOptions', type: 'radio', id: this.label });
     this.element.append(this.radioInput.el);
-    this.element.append($$('label', { for: this.label }, this.label).el);
+    this.element.append($$('label', { for: this.label }, l(this.label)).el);
     return this.element;
   }
 }

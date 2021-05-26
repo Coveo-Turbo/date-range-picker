@@ -5,7 +5,8 @@
     "main": "dist/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "coveops build DateRangePicker --template typescript",
+        "build": "coveops build DateRangePicker --template typescript --performance-threshold 800",
+        "watch": "coveops build DateRangePicker --template typescript --performance-threshold 800 --watch",
         "serve": "coveops serve",
         "precompile": "npm run build"
     },
@@ -18,10 +19,12 @@
     ],
     "dependencies": {
         "@coveops/turbo-core": "^1.1.1",
-        "coveo-search-ui": "^2.9159.8",
+        "coveo-search-ui": "^2.10085.2",
+        "pikaday": "^1.8.2",
         "svg-inline-loader": "^0.8.2"
     },
     "devDependencies": {
-        "@coveops/cli": "^0.8.1"
+        "@coveops/cli": "^0.16.0",
+        "@types/pikaday": "^1.7.0"
     }
 }

@@ -1,7 +1,6 @@
-import { 
+import {
   ComponentOptions,
   Component,
-  Initialization,
   $$,
   l,
   DateUtils,
@@ -11,25 +10,16 @@ import {
   QueryEvents,
   IBuildingQueryEventArgs,
   Assert,
-  DatePicker,
   IComponentBindings,
   Utils,
   IAttributeChangedEventArg,
-  Model } from 'coveo-search-ui';
+  Model
+} from 'coveo-search-ui';
 import { lazyComponent } from '@coveops/turbo-core';
 import { IDateRangePickerRadioOptions, DateRangePickerRadio } from './DateRangePickerRadio';
 import { DateRangePickerActionCause, IDateRangePickerAnalyticsArgs, IRadioSelectEventArgs, DateRangePickerEvent } from './events/DateRangePickerEvents';
 import { SVGIcons } from './utils/SVGIcons';
-
-//declare const require: (module: string) => any;
-//require('./sass/DateRangePicker.scss');
-
-
-// Hack to prevent sending twice the same query
-Coveo.DatePicker.prototype['setValue'] = function(date: Date, preventOnSelect = false) {
-  (this as any)['picker'].setDate(date, preventOnSelect);
-  (this as any)['wasReset'] = false;
-};
+import { DatePicker } from './DatePicker';
 
 export interface IDateRangePickerOptions extends IDateRangePickerRadioOptions {
   id?: string;
@@ -41,18 +31,21 @@ export interface IDateRangePickerOptions extends IDateRangePickerRadioOptions {
   langCode?: string;
   format?: string;
   inputPlaceholder?: string;
+  firstDay?: number;
+  startCaption?: string;
+  endCaption?: string;
 }
 
 @lazyComponent
 export class DateRangePicker extends Component {
-    static ID = 'DateRangePicker';
-    static options: IDateRangePickerOptions = {
-       /**
-     * Specifies a unique identifier for the Component. Among other things, this identifier serves the purpose of saving the
-     * component state in the URL hash.
-     *
-     * Default value is the concatenation of {@link RangePicker.options.fieldFrom} and {@link RangePicker.options.fieldTo} option value.
-     */
+  static ID = 'DateRangePicker';
+  static options: IDateRangePickerOptions = {
+    /**
+    * Specifies a unique identifier for the Component. Among other things, this identifier serves the purpose of saving the
+    * component state in the URL hash.
+    *
+    * Default value is the concatenation of {@link RangePicker.options.fieldFrom} and {@link RangePicker.options.fieldTo} option value.
+    */
     id: ComponentOptions.buildStringOption({
       postProcessing: (value: string, options: IDateRangePickerOptions) => value || _.unique([options.fieldFrom, options.fieldTo]).join('-')
     }),
@@ -134,377 +127,389 @@ export class DateRangePicker extends Component {
 
     format: ComponentOptions.buildStringOption({ defaultValue: 'YYYY-MM-DD' }),
 
-    inputPlaceholder: ComponentOptions.buildStringOption({ defaultValue: 'YYYY-MM-DD' })
+    inputPlaceholder: ComponentOptions.buildStringOption({ defaultValue: 'YYYY-MM-DD' }),
+
+    firstDay: ComponentOptions.buildNumberOption({ defaultValue: 0}),
+
+    startCaption: ComponentOptions.buildLocalizedStringOption({defaultValue: 'Start', required: false}),
+
+    endCaption: ComponentOptions.buildLocalizedStringOption({defaultValue: 'End', required: false}),
+  };
+  // Default value for from and to
+  static DEFAULT: number = -1;
+
+  private from: number = DateRangePicker.DEFAULT;
+  private to: number = DateRangePicker.DEFAULT;
+  private radio: number = DateRangePicker.DEFAULT;
+  private fromInput: DatePicker;
+  private toInput: DatePicker;
+  private eraserElement: HTMLElement | undefined;
+  private rangePickerQueryStateAttribute: string = '';
+  private rangePickerRadio: DateRangePickerRadio;
+
+  constructor(public element: HTMLElement, public options: IDateRangePickerOptions, public bindings: IComponentBindings) {
+    super(element, DateRangePicker.ID, bindings);
+    this.options = ComponentOptions.initComponentOptions(element, DateRangePicker, options);
+
+    this.rangePickerRadio = new DateRangePickerRadio(this.root, this.options);
+
+    this.fromInput = this.buildInput(this.getId('start'));
+    this.toInput = this.buildInput(this.getId('end'));
+
+    this.initQueryEvents();
+    this.initQueryStateEvents();
+  }
+
+  createDom() {
+    this.buildFacetContent();
+    this.updateAppearanceDependingOnState();
+    this.fromInput.reset();
+    this.toInput.reset();
+  }
+
+  /**
+   * Resets the Component by reseting its inputs and redrawing the component.
+   *
+   * @param {boolean} [executeQuery=true] Specifies whether to execute the query once the component has been reset
+   */
+  reset(executeQuery: boolean = true) {
+    this.ensureDom();
+    this.fromInput.reset();
+    this.toInput.reset();
+
+    if (this.shouldRenderRadioPicker()) {
+      this.rangePickerRadio.reset();
+    }
+
+    const range = { from: DateRangePicker.DEFAULT, to: DateRangePicker.DEFAULT, radio: DateRangePicker.DEFAULT };
+
+    this.logger.info('reset', executeQuery);
+    this.onChange(range, DateRangePickerActionCause.facetRangeClear, executeQuery);
+    this.updateAppearanceDependingOnState();
+  }
+
+  private buildFacetContent() {
+    const headerElement = this.buildHeader();
+    this.element.appendChild(headerElement);
+
+    this.buildContent();
+  }
+
+  private buildContent() {
+    const innerContent = $$('div', { className: 'inner-content' });
+
+    if (this.shouldRenderRadioPicker()) {
+      innerContent.append(this.rangePickerRadio.build());
+    }
+
+    innerContent.append(this.buildPickerInputSection());
+    this.element.appendChild(innerContent.el);
+  }
+
+  private shouldRenderRadioPicker(): boolean {
+    Assert.exists(this.options.enableRadioButton);
+    return this.options.enableRadioButton as boolean;
+  }
+
+  protected buildPickerInputSection(): HTMLElement {
+    const inputSection = $$('div', { className: 'input-section' });
+
+    inputSection.append(this.buildPickerinputRow(this.options.startCaption, this.getId('start'), this.fromInput.getElement()));
+    inputSection.append(this.buildPickerinputRow(this.options.endCaption, this.getId('end'), this.toInput.getElement()));
+
+    return inputSection.el;
+  }
+
+  private getId(extra?: string): string {
+    return `${this.options.id}${extra ? '-' + extra : ''}`;
+  }
+
+  protected buildPickerinputRow(labelCaption: string, id: string, inputElement: HTMLInputElement): HTMLElement {
+    const inputRow = $$('div', { className: 'flex input-row' });
+    inputRow.append($$('div', { className: 'input-label' }, l(labelCaption)).el);
+    inputRow.append(inputElement);
+    inputRow.append($$('label', { for: id, className: 'calendar-icon' }, SVGIcons.icons.calendar).el);
+    // inputRow.append(this.buildEraser());
+    return inputRow.el;
+  }
+
+  protected buildHeader(): HTMLElement {
+    const header = $$('div', { className: 'coveo-facet-header' });
+
+    const titleSection = $$('div', { className: 'coveo-facet-header-title-section' });
+    titleSection.append($$('div', { className: 'coveo-facet-header-title' }, this.options.title as string).el);
+    titleSection.append($$('div', { className: 'coveo-facet-header-wait-animation', style: 'visibility:hidden' }).el);
+    header.append(titleSection.el);
+
+    header.append(this.buildEraser());
+    return header.el;
+  }
+
+  protected buildEraser(): HTMLElement {
+    this.eraserElement = $$(
+      'div',
+      { title: l('Clear', this.options.title), className: 'coveo-facet-header-eraser' },
+      SVGIcons.icons.facetClear
+    ).el;
+
+    const svgElement = this.eraserElement.querySelector('svg');
+    if (svgElement) {
+      svgElement.classList.add('coveo-facet-header-eraser-svg');
+    }
+
+    const args: IDateRangePickerAnalyticsArgs = {
+      rangeFieldFrom: this.options.fieldFrom,
+      rangeFieldTo: this.options.fieldTo,
+      rangePickerTitle: this.options.title as string,
+      rangePickerState: `${this.from}-${this.to}`
     };
-    // Default value for from and to
-    static DEFAULT: number = -1;
 
-    private from: number = DateRangePicker.DEFAULT;
-    private to: number = DateRangePicker.DEFAULT;
-    private radio: number = DateRangePicker.DEFAULT;
-    private fromInput: DatePicker;
-    private toInput: DatePicker;
-    private eraserElement: HTMLElement | undefined;
-    private rangePickerQueryStateAttribute: string = '';
-    private rangePickerRadio: DateRangePickerRadio;
+    $$(this.eraserElement).on('click', () => {
+      this.usageAnalytics.logCustomEvent({ name: DateRangePickerActionCause.facetRangeClear, type: 'customEventType' }, args, this.root);
+      this.reset();
+    });
+    return this.eraserElement;
+  }
 
-    constructor(public element: HTMLElement, public options: IDateRangePickerOptions, public bindings: IComponentBindings) {
-        super(element, DateRangePicker.ID, bindings);
-        this.options = ComponentOptions.initComponentOptions(element, DateRangePicker, options);
-
-        this.rangePickerRadio = new DateRangePickerRadio(this.root, this.options);
-
-        this.fromInput = this.buildInput(this.getId('start'));
-        this.toInput = this.buildInput(this.getId('end'));
-
-        this.initQueryEvents();
-        this.initQueryStateEvents();
-    }
-
-    createDom() {
-      this.buildFacetContent();
-      this.updateAppearanceDependingOnState();
-      this.fromInput.reset();
-      this.toInput.reset();
-    }
-  
-    /**
-     * Resets the Component by reseting its inputs and redrawing the component.
-     *
-     * @param {boolean} [executeQuery=true] Specifies whether to execute the query once the component has been reset
-     */
-    reset(executeQuery: boolean = true) {
-      this.ensureDom();
-      this.fromInput.reset();
-      this.toInput.reset();
-  
-      if (this.shouldRenderRadioPicker()) {
-        this.rangePickerRadio.reset();
-      }
-  
-      const range = { from: DateRangePicker.DEFAULT, to: DateRangePicker.DEFAULT, radio: DateRangePicker.DEFAULT };
-  
-      this.logger.info('reset', executeQuery);
-      this.onChange(range, DateRangePickerActionCause.facetRangeClear, executeQuery);
-      this.updateAppearanceDependingOnState();
-    }
-  
-    private buildFacetContent() {
-      const headerElement = this.buildHeader();
-      this.element.appendChild(headerElement);
-  
-      this.buildContent();
-    }
-  
-    private buildContent() {
-      const innerContent = $$('div', { className: 'inner-content' });
-  
-      if (this.shouldRenderRadioPicker()) {
-        innerContent.append(this.rangePickerRadio.build());
-      }
-  
-      innerContent.append(this.buildPickerInputSection());
-      this.element.appendChild(innerContent.el);
-    }
-  
-    private shouldRenderRadioPicker(): boolean {
-      Assert.exists(this.options.enableRadioButton);
-      return this.options.enableRadioButton as boolean;
-    }
-  
-    protected buildPickerInputSection(): HTMLElement {
-      const inputSection = $$('div', { className: 'input-section' });
-  
-      inputSection.append(this.buildPickerinputRow('Start', this.getId('start'), this.fromInput.getElement()));
-      inputSection.append(this.buildPickerinputRow('End', this.getId('end'), this.toInput.getElement()));
-  
-      return inputSection.el;
-    }
-  
-    private getId(extra?: string): string {
-      return `${this.options.id}${extra ? '-' + extra : ''}`;
-    }
-  
-    protected buildPickerinputRow(labelCaption: string, id: string, inputElement: HTMLInputElement): HTMLElement {
-      const inputRow = $$('div', { className: 'flex input-row' });
-      inputRow.append($$('div', { className: 'input-label' }, labelCaption).el);
-      inputRow.append(inputElement);
-      inputRow.append($$('label', { for: id, className: 'calendar-icon' }, SVGIcons.icons.calendar).el);
-      return inputRow.el;
-    }
-  
-    protected buildHeader(): HTMLElement {
-      const header = $$('div', { className: 'coveo-facet-header' });
-  
-      const titleSection = $$('div', { className: 'coveo-facet-header-title-section' });
-      titleSection.append($$('div', { className: 'coveo-facet-header-title' }, this.options.title as string).el);
-      titleSection.append($$('div', { className: 'coveo-facet-header-wait-animation', style: 'visibility:hidden' }).el);
-      header.append(titleSection.el);
-  
-      header.append(this.buildEraser());
-      return header.el;
-    }
-  
-    protected buildEraser(): HTMLElement {
-      this.eraserElement = $$(
-        'div',
-        { title: l('Clear', this.options.title), className: 'coveo-facet-header-eraser' },
-        SVGIcons.icons.facetClear
-      ).el;
-  
-      const svgElement = this.eraserElement.querySelector('svg');
-      if (svgElement) {
-        svgElement.classList.add('coveo-facet-header-eraser-svg');
-      }
-  
-      const args: IDateRangePickerAnalyticsArgs = {
-        rangeFieldFrom: this.options.fieldFrom,
-        rangeFieldTo: this.options.fieldTo,
-        rangePickerTitle: this.options.title as string,
-        rangePickerState: `${this.from}-${this.to}`
-      };
-  
-      $$(this.eraserElement).on('click', () => {
-        this.usageAnalytics.logCustomEvent({ name: DateRangePickerActionCause.facetRangeClear, type: 'customEventType' }, args, this.root);
-        this.reset();
+  protected buildInput(id: string) {
+    const pickerElement = new DatePicker({
+        onChange: () => this.handleInputChange(),
+        format: this.options.format,
+        firstDay: this.options.firstDay,
+        langCode: this.options.langCode,
       });
-      return this.eraserElement;
+    if (this.options.inputPlaceholder) {
+      pickerElement.getElement().setAttribute('placeholder', this.options.inputPlaceholder);
     }
-  
-    protected buildInput(id: string) {
-      const pickerElement = new Coveo.DatePicker(() => this.handleInputChange());
-      if (this.options.inputPlaceholder) {
-        pickerElement.getElement().setAttribute('placeholder', this.options.inputPlaceholder);
-      }
-      pickerElement.getElement().setAttribute('id', id);
-      return pickerElement;
-    }
-  
-    private updateAppearanceDependingOnState() {
-      Assert.exists(this.eraserElement);
-      const isActive = Utils.isNonEmptyString(this.fromInput.getValue() + this.toInput.getValue());
-  
-      $$(this.element).toggleClass('coveo-active', isActive);
-      $$(this.eraserElement as HTMLElement).toggleClass('coveo-facet-header-eraser-visible', isActive);
-    }
-  
-    private onChange(range: IRadioSelectEventArgs, actionCause: string, executeQuery: boolean = true): void {
-      this.queryStateModel.set(this.rangePickerQueryStateAttribute, range);
-      if (executeQuery) {
-        this.triggerNewQuery(() =>
-          this.usageAnalytics.logCustomEvent(
-            { name: actionCause, type: 'customEventType' },
-            {
-              rangeFieldFrom: this.options.fieldFrom,
-              rangeFieldTo: this.options.fieldTo,
-              rangePickerTitle: this.options.title as string,
-              rangePickerState: `${this.from}-${this.to}`
-            },
-            this.root
-          )
-        );
-      }
-    }
-  
-    public triggerNewQuery(beforeExecuteQuery: () => void) {
-      this.queryController.executeQuery({ ignoreWarningSearchEvent: true, beforeExecuteQuery: beforeExecuteQuery });
-    }
-  
-    private getQuery(): string | null {
-      if (this.from === DateRangePicker.DEFAULT && this.to === DateRangePicker.DEFAULT) {
-        return null;
-      }
-  
-      const query = [];
-      if (this.from !== DateRangePicker.DEFAULT) {
-        const fromDate = new Date(this.from);
-        query.push(this.options.fieldFrom + ' >= ' + DateUtils.dateForQuery(fromDate));
-      }
-      if (this.to !== DateRangePicker.DEFAULT) {
-        const toDate = new Date(this.to);
-        query.push(this.options.fieldTo + ' <= ' + DateUtils.dateForQuery(toDate));
-      }
-      return query.join(' AND ');
-    }
-  
-    private handleBuildingQuery(args: IBuildingQueryEventArgs) {
-      const query = this.getQuery();
-      if (query !== null) {
-        args.queryBuilder.advancedExpression.add(query);
-      }
-    }
-  
-    private handleDeferredQuerySuccess(args: IQuerySuccessEventArgs) {
-      this.ensureDom();
-      if (this.from === DateRangePicker.DEFAULT) {
-        this.fromInput.reset();
-        this.fromInput.getElement().value = '';
-      } else {
-        (this.fromInput as any)['setValue'](new Date(this.from), true);
-      }
-  
-      if (this.to === DateRangePicker.DEFAULT) {
-        this.toInput.reset();
-        this.toInput.getElement().value = '';
-      } else {
-        (this.toInput as any)['setValue'](new Date(this.to), true);
-      }
-  
-      if (this.radio === DateRangePicker.DEFAULT) {
-        this.rangePickerRadio.reset();
-      } else {
-        this.rangePickerRadio.setValue(this.radio);
-      }
-  
-      this.updateAppearanceDependingOnState();
-    }
-  
-    private initQueryEvents() {
-      this.bind.onRootElement(DateRangePickerEvent.inputChange, (args: IRadioSelectEventArgs) => {
-        // this.queryStateModel.set(this.rangePickerQueryStateAttribute, args);
-      });
-  
-      this.bind.onRootElement(DateRangePickerEvent.radioSelect, (args: IRadioSelectEventArgs) => {
-        this.logger.info('radioSelect', args);
-        this.onChange(args, DateRangePickerActionCause.facetRangeRadioSelect, true);
-      });
-      this.bind.onRootElement(QueryEvents.deferredQuerySuccess, (args: IQuerySuccessEventArgs) => this.handleDeferredQuerySuccess(args));
-      this.bind.onRootElement(QueryEvents.buildingQuery, (args: IBuildingQueryEventArgs) => this.handleBuildingQuery(args));
-      this.bind.onRootElement(BreadcrumbEvents.populateBreadcrumb, (args: IPopulateBreadcrumbEventArgs) =>
-        this.handlePopulateBreadcrumb(args)
+    pickerElement.getElement().setAttribute('id', id);
+    return pickerElement;
+  }
+
+  private updateAppearanceDependingOnState() {
+    Assert.exists(this.eraserElement);
+    const isActive = Utils.isNonEmptyString(this.fromInput.getValue() + this.toInput.getValue());
+
+    $$(this.element).toggleClass('coveo-active', isActive);
+    $$(this.eraserElement as HTMLElement).toggleClass('coveo-facet-header-eraser-visible', isActive);
+  }
+
+  private onChange(range: IRadioSelectEventArgs, actionCause: string, executeQuery: boolean = true): void {
+    this.queryStateModel.set(this.rangePickerQueryStateAttribute, range);
+    if (executeQuery) {
+      this.triggerNewQuery(() =>
+        this.usageAnalytics.logCustomEvent(
+          { name: actionCause, type: 'customEventType' },
+          {
+            rangeFieldFrom: this.options.fieldFrom,
+            rangeFieldTo: this.options.fieldTo,
+            rangePickerTitle: this.options.title as string,
+            rangePickerState: `${this.from}-${this.to}`
+          },
+          this.root
+        )
       );
-      this.bind.onRootElement(BreadcrumbEvents.clearBreadcrumb, () => this.handleClearBreadcrumb());
     }
-  
-    private initQueryStateEvents() {
-      this.rangePickerQueryStateAttribute = this.options.id + ':rangePicker';
-  
-      this.queryStateModel.registerNewAttribute(this.rangePickerQueryStateAttribute, {
-        from: DateRangePicker.DEFAULT,
-        to: DateRangePicker.DEFAULT,
-        radio: DateRangePicker.DEFAULT
+  }
+
+  public triggerNewQuery(beforeExecuteQuery: () => void) {
+    this.queryController.executeQuery({ ignoreWarningSearchEvent: true, beforeExecuteQuery: beforeExecuteQuery });
+  }
+
+  private getQuery(): string | null {
+    if (this.from === DateRangePicker.DEFAULT && this.to === DateRangePicker.DEFAULT) {
+      return null;
+    }
+
+    const query = [];
+    if (this.from !== DateRangePicker.DEFAULT) {
+      const fromDate = new Date(this.from);
+      query.push(this.options.fieldFrom + ' >= ' + DateUtils.dateForQuery(fromDate));
+    }
+    if (this.to !== DateRangePicker.DEFAULT) {
+      const toDate = new Date(this.to);
+      query.push(this.options.fieldTo + ' <= ' + DateUtils.dateForQuery(toDate));
+    }
+    return query.join(' AND ');
+  }
+
+  private handleBuildingQuery(args: IBuildingQueryEventArgs) {
+    const query = this.getQuery();
+    if (query !== null) {
+      args.queryBuilder.advancedExpression.add(query);
+    }
+  }
+
+  private handleDeferredQuerySuccess(args: IQuerySuccessEventArgs) {
+    this.ensureDom();
+    if (this.from === DateRangePicker.DEFAULT) {
+      this.fromInput.reset();
+      this.fromInput.getElement().value = '';
+    } else {
+      (this.fromInput as any)['setValue'](new Date(this.from), true);
+    }
+
+    if (this.to === DateRangePicker.DEFAULT) {
+      this.toInput.reset();
+      this.toInput.getElement().value = '';
+    } else {
+      (this.toInput as any)['setValue'](new Date(this.to), true);
+    }
+
+    if (this.radio === DateRangePicker.DEFAULT) {
+      this.rangePickerRadio.reset();
+    } else {
+      this.rangePickerRadio.setValue(this.radio);
+    }
+
+    this.updateAppearanceDependingOnState();
+  }
+
+  private initQueryEvents() {
+    this.bind.onRootElement(DateRangePickerEvent.inputChange, (args: IRadioSelectEventArgs) => {
+      // this.queryStateModel.set(this.rangePickerQueryStateAttribute, args);
+    });
+
+    this.bind.onRootElement(DateRangePickerEvent.radioSelect, (args: IRadioSelectEventArgs) => {
+      this.logger.info('radioSelect', args);
+      this.onChange(args, DateRangePickerActionCause.facetRangeRadioSelect, true);
+    });
+    this.bind.onRootElement(QueryEvents.deferredQuerySuccess, (args: IQuerySuccessEventArgs) => this.handleDeferredQuerySuccess(args));
+    this.bind.onRootElement(QueryEvents.buildingQuery, (args: IBuildingQueryEventArgs) => this.handleBuildingQuery(args));
+    this.bind.onRootElement(BreadcrumbEvents.populateBreadcrumb, (args: IPopulateBreadcrumbEventArgs) =>
+      this.handlePopulateBreadcrumb(args)
+    );
+    this.bind.onRootElement(BreadcrumbEvents.clearBreadcrumb, () => this.handleClearBreadcrumb());
+  }
+
+  private initQueryStateEvents() {
+    this.rangePickerQueryStateAttribute = this.options.id + ':rangePicker';
+
+    this.queryStateModel.registerNewAttribute(this.rangePickerQueryStateAttribute, {
+      from: DateRangePicker.DEFAULT,
+      to: DateRangePicker.DEFAULT,
+      radio: DateRangePicker.DEFAULT
+    });
+    const eventName = this.queryStateModel.getEventName(Model.eventTypes.changeOne + this.rangePickerQueryStateAttribute);
+
+    this.bind.onRootElement(eventName, (args: IAttributeChangedEventArg) => {
+      this.handleQueryStateChanged(args.value);
+    });
+  }
+
+  private handleQueryStateChanged(state: IRadioSelectEventArgs) {
+    this.ensureDom();
+    const from = Number(state.from);
+    const to = Number(state.to);
+    const radio = Number(state.radio);
+
+    if (!isNaN(from) && DateUtils.isValid(new Date(from))) {
+      this.from = from;
+    } else {
+      this.from = DateRangePicker.DEFAULT;
+    }
+
+    if (!isNaN(to) && DateUtils.isValid(new Date(to))) {
+      this.to = to;
+    } else {
+      this.to = DateRangePicker.DEFAULT;
+    }
+
+    if (!isNaN(radio) && this.rangePickerRadio.isValid(radio)) {
+      this.radio = radio;
+    } else {
+      this.radio = DateRangePicker.DEFAULT;
+    }
+  }
+
+  private handlePopulateBreadcrumb(args: IPopulateBreadcrumbEventArgs) {
+    const breadcrumb = this.populateBreadcrumb();
+    if (breadcrumb !== null) {
+      args.breadcrumbs.push({
+        element: breadcrumb
       });
-      const eventName = this.queryStateModel.getEventName(Model.eventTypes.changeOne + this.rangePickerQueryStateAttribute);
-  
-      this.bind.onRootElement(eventName, (args: IAttributeChangedEventArg) => {
-        this.handleQueryStateChanged(args.value);
-      });
     }
-  
-    private handleQueryStateChanged(state: IRadioSelectEventArgs) {
-      this.ensureDom();
-      const from = Number(state.from);
-      const to = Number(state.to);
-      const radio = Number(state.radio);
-  
-      if (!isNaN(from) && DateUtils.isValid(new Date(from))) {
-        this.from = from;
-      } else {
-        this.from = DateRangePicker.DEFAULT;
-      }
-  
-      if (!isNaN(to) && DateUtils.isValid(new Date(to))) {
-        this.to = to;
-      } else {
-        this.to = DateRangePicker.DEFAULT;
-      }
-  
-      if (!isNaN(radio) && this.rangePickerRadio.isValid(radio)) {
-        this.radio = radio;
-      } else {
-        this.radio = DateRangePicker.DEFAULT;
-      }
+  }
+
+  private hasEmptyState(): boolean {
+    return this.from === DateRangePicker.DEFAULT && this.to === DateRangePicker.DEFAULT;
+  }
+
+  private populateBreadcrumb(): HTMLElement | null {
+    if (this.hasEmptyState()) {
+      return null;
     }
-  
-    private handlePopulateBreadcrumb(args: IPopulateBreadcrumbEventArgs) {
-      const breadcrumb = this.populateBreadcrumb();
-      if (breadcrumb !== null) {
-        args.breadcrumbs.push({
-          element: breadcrumb
-        });
-      }
-    }
-  
-    private hasEmptyState(): boolean {
-      return this.from === DateRangePicker.DEFAULT && this.to === DateRangePicker.DEFAULT;
-    }
-  
-    private populateBreadcrumb(): HTMLElement | null {
-      if (this.hasEmptyState()) {
-        return null;
-      }
-      const range: string[] = [];
-  
-      /* Here, handling date format;
-          - we dont have at this level the same library as in CustomDatePicker to handle the date format string
-          - we are therefore using the values generated by CustomDatePicker
-      */
-      if (this.from !== DateRangePicker.DEFAULT) {
-        const fromDate = new Date(this.from);
-        try {
-          range.push(l('From').toLowerCase() + ' ' + this.fromInput.getValue());
-        } catch (e) {
-          range.push('from ' + DateUtils.dateForQuery(fromDate));
-        }
-      }
-  
-      if (this.to !== DateRangePicker.DEFAULT) {
-        const toDate = new Date(this.to);
-        try {
-          range.push(l('To').toLowerCase() + ' ' + this.toInput.getValue());
-        } catch (e) {
-          range.push('to ' + DateUtils.dateForQuery(toDate));
-        }
-      }
-  
-      const element = $$('div', { className: 'coveo-facet-breadcrumb coveo-breadcrumb-item vin-breadcrumb' });
-  
-      const title = $$('span', { className: 'coveo-facet-breadcrumb-title' }, this.options.title + ': ');
-      element.append(title.el);
-  
-      const value = $$('span', { className: 'coveo-facet-breadcrumb-value coveo-selected' });
-      title.append(value.el);
-  
-      value.on('click', () => {
-        this.reset();
-      });
-  
-      const caption = $$('span', { className: 'coveo-facet-breadcrumb-caption' }, range.join(' - '));
-      value.append(caption.el);
-  
-      const eraser = $$('span', { className: 'coveo-facet-breadcrumb-clear' });
-      value.append(eraser.el);
-  
-      return element.el;
-    }
-  
-    private handleClearBreadcrumb() {
-      this.reset(false);
-    }
-  
-    private handleInputChange() {
+    const range: string[] = [];
+
+    /* Here, handling date format;
+        - we dont have at this level the same library as in CustomDatePicker to handle the date format string
+        - we are therefore using the values generated by CustomDatePicker
+    */
+    if (this.from !== DateRangePicker.DEFAULT) {
+      const fromDate = new Date(this.from);
       try {
-        (this.fromInput as any)['wasReset'] = false;
-        (this.toInput as any)['wasReset'] = false;
-      } catch (error) {
-        this.logger.error('Unable to reset the inputs');
+        range.push(l('From').toLowerCase() + ' ' + this.fromInput.getValue());
+      } catch (e) {
+        range.push('from ' + DateUtils.dateForQuery(fromDate));
       }
-  
-      this.ensureDom();
-  
-      if (this.shouldRenderRadioPicker()) {
-        this.rangePickerRadio.reset();
-      }
-  
-      const range: IRadioSelectEventArgs = {
-        from: this.fromInput.getValue() ? new Date(this.fromInput.getValue()).getTime() : DateRangePicker.DEFAULT,
-        to: this.toInput.getValue() ? new Date(this.toInput.getValue()).getTime() : DateRangePicker.DEFAULT,
-        radio: DateRangePicker.DEFAULT
-      };
-  
-      this.bind.trigger(this.root, DateRangePickerEvent.inputChange, range);
-      const executeQuery = range.from !== this.from || range.to !== this.to;
-      this.logger.info('Input change', range, this.from, this.to, executeQuery);
-      this.onChange(range, DateRangePickerActionCause.facetRangeInputChange, executeQuery);
     }
+
+    if (this.to !== DateRangePicker.DEFAULT) {
+      const toDate = new Date(this.to);
+      try {
+        range.push(l('To').toLowerCase() + ' ' + this.toInput.getValue());
+      } catch (e) {
+        range.push('to ' + DateUtils.dateForQuery(toDate));
+      }
+    }
+
+    const element = $$('div', { className: 'coveo-facet-breadcrumb coveo-breadcrumb-item vin-breadcrumb' });
+
+    const title = $$('span', { className: 'coveo-facet-breadcrumb-title' }, this.options.title + ': ');
+    element.append(title.el);
+
+    const value = $$('span', { className: 'coveo-facet-breadcrumb-value coveo-selected' });
+    title.append(value.el);
+
+    value.on('click', () => {
+      this.reset();
+    });
+
+    const caption = $$('span', { className: 'coveo-facet-breadcrumb-caption' }, range.join(' - '));
+    value.append(caption.el);
+
+    const eraser = $$('span', { className: 'coveo-facet-breadcrumb-clear' });
+    value.append(eraser.el);
+
+    return element.el;
+  }
+
+  private handleClearBreadcrumb() {
+    this.reset(false);
+  }
+
+  private handleInputChange(): void {
+    try {
+      (this.fromInput as any)['wasReset'] = false;
+      (this.toInput as any)['wasReset'] = false;
+    } catch (error) {
+      this.logger.error('Unable to reset the inputs');
+    }
+
+    this.ensureDom();
+
+    if (this.shouldRenderRadioPicker()) {
+      this.rangePickerRadio.reset();
+    }
+
+    const range: IRadioSelectEventArgs = {
+      from: this.fromInput.getValue() ? new Date(this.fromInput.getValue()).getTime() : DateRangePicker.DEFAULT,
+      to: this.toInput.getValue() ? new Date(this.toInput.getValue()).getTime() : DateRangePicker.DEFAULT,
+      radio: DateRangePicker.DEFAULT
+    };
+
+    this.bind.trigger(this.root, DateRangePickerEvent.inputChange, range);
+    const executeQuery = range.from !== this.from || range.to !== this.to;
+    this.logger.info('Input change', range, this.from, this.to, executeQuery);
+    this.onChange(range, DateRangePickerActionCause.facetRangeInputChange, executeQuery);
+  }
 }
