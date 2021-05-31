@@ -91,7 +91,6 @@ export class DatePicker implements IFormWidget, IFormWidgetSettable {
     }
 
     protected buildContent() {
-        console.log('amanda',locales[this.options.langCode].monthNames);
         this.element = <HTMLInputElement>$$('input', { className: 'coveo-button', 'aria-label': l('Date') }).el;
         this.element.readOnly = true;
         this.picker = new Pikaday({
