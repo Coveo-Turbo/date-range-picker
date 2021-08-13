@@ -129,11 +129,11 @@ export class DateRangePicker extends Component {
 
     inputPlaceholder: ComponentOptions.buildStringOption({ defaultValue: 'YYYY-MM-DD' }),
 
-    firstDay: ComponentOptions.buildNumberOption({ defaultValue: 0}),
+    firstDay: ComponentOptions.buildNumberOption({ defaultValue: 0 }),
 
-    startCaption: ComponentOptions.buildLocalizedStringOption({defaultValue: 'Start', required: false}),
+    startCaption: ComponentOptions.buildLocalizedStringOption({ defaultValue: 'Start', required: false }),
 
-    endCaption: ComponentOptions.buildLocalizedStringOption({defaultValue: 'End', required: false}),
+    endCaption: ComponentOptions.buildLocalizedStringOption({ defaultValue: 'End', required: false }),
   };
   // Default value for from and to
   static DEFAULT: number = -1;
@@ -273,11 +273,11 @@ export class DateRangePicker extends Component {
 
   protected buildInput(id: string) {
     const pickerElement = new DatePicker({
-        onChange: () => this.handleInputChange(),
-        format: this.options.format,
-        firstDay: this.options.firstDay,
-        langCode: this.options.langCode,
-      });
+      onChange: () => this.handleInputChange(),
+      format: this.options.format,
+      firstDay: this.options.firstDay,
+      langCode: this.options.langCode,
+    });
     if (this.options.inputPlaceholder) {
       pickerElement.getElement().setAttribute('placeholder', this.options.inputPlaceholder);
     }
@@ -467,7 +467,7 @@ export class DateRangePicker extends Component {
     const title = $$('span', { className: 'coveo-facet-breadcrumb-title' }, this.options.title + ': ');
     element.append(title.el);
 
-    const value = $$('span', { className: 'coveo-facet-breadcrumb-value coveo-selected' });
+    const value = $$('span', { className: 'coveo-dynamic-facet-breadcrumb-value' });
     title.append(value.el);
 
     value.on('click', () => {
@@ -477,7 +477,8 @@ export class DateRangePicker extends Component {
     const caption = $$('span', { className: 'coveo-facet-breadcrumb-caption' }, range.join(' - '));
     value.append(caption.el);
 
-    const eraser = $$('span', { className: 'coveo-facet-breadcrumb-clear' });
+    const eraser = $$('span', { className: 'coveo-dynamic-facet-breadcrumb-value-clear' });
+    eraser.setHtml(`<span class="coveo-dynamic-facet-breadcrumb-value-clear"><svg focusable="false" enable-background="new 0 0 13 13" viewBox="0 0 13 13" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Clear"><title>Clear</title><g fill="currentColor"><path d="m7.881 6.501 4.834-4.834c.38-.38.38-1.001 0-1.381s-1.001-.38-1.381 0l-4.834 4.834-4.834-4.835c-.38-.38-1.001-.38-1.381 0s-.38 1.001 0 1.381l4.834 4.834-4.834 4.834c-.38.38-.38 1.001 0 1.381s1.001.38 1.381 0l4.834-4.834 4.834 4.834c.38.38 1.001.38 1.381 0s .38-1.001 0-1.381z"></path></g></svg></span>`);
     value.append(eraser.el);
 
     return element.el;
