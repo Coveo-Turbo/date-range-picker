@@ -34,6 +34,9 @@ export interface IDateRangePickerOptions extends IDateRangePickerRadioOptions {
   firstDay?: number;
   startCaption?: string;
   endCaption?: string;
+  readOnlyInput?: boolean;
+  yearsBack?: number;
+  yearsAhead?: number;
 }
 
 @lazyComponent
@@ -134,6 +137,12 @@ export class DateRangePicker extends Component {
     startCaption: ComponentOptions.buildLocalizedStringOption({ defaultValue: 'Start', required: false }),
 
     endCaption: ComponentOptions.buildLocalizedStringOption({ defaultValue: 'End', required: false }),
+
+    readOnlyInput: ComponentOptions.buildBooleanOption({ defaultValue: true }),
+
+    yearsBack: ComponentOptions.buildNumberOption({ defaultValue: 100 }),
+
+    yearsAhead: ComponentOptions.buildNumberOption({ defaultValue: 0 }),
   };
   // Default value for from and to
   static DEFAULT: number = -1;
@@ -277,6 +286,9 @@ export class DateRangePicker extends Component {
       format: this.options.format,
       firstDay: this.options.firstDay,
       langCode: this.options.langCode,
+      readOnlyInput: this.options.readOnlyInput,
+      yearsBack: this.options.yearsBack,
+      yearsAhead: this.options.yearsAhead,
     });
     if (this.options.inputPlaceholder) {
       pickerElement.getElement().setAttribute('placeholder', this.options.inputPlaceholder);

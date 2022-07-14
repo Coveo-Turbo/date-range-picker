@@ -52,23 +52,26 @@ Place the component in your markup:
 
 The following options can be configured:
 
-| Option | Required | Type | Default | Notes |
-| --- | --- | --- | --- | --- |
-| `id` | No | string | `fieldFrom-fieldTo` | id of the control |
-| `title` | No | string | `NoTitle` | Specifies the title to display at the top of the Component |
-| `startCaption` | No | string | `Start` | Specifies what the caption of "start" should be |
-| `endCaption` | No | string | `End` | Specifies what the caption of "end" should be |
-| `todayCaption` | No | string | `Today` | Specifies what the caption of "today" radio button should be |
-| `thisWeekCaption` | No | string | `This Week` | Specifies what the caption of "thisweek" radio button should be |
-| `lastWeekCaption` | No | string | `Last Week` | Specifies what the caption of "lastweek" radio button should be |
-| `thisMonthCaption` | No | string | `This Month` | Specifies what the caption of "thismonth" radio button should be |
-| `fieldFrom` | Yes | string | `@sysdate` | Index field to use for the from date |
-| `fieldTo` | Yes | string | `@sysdate` | Index field to use for the to date|
-| `enableRadioButton` | No | boolean | `false` | Show radiobuttons with today, thisweek etc. |
-| `langCode` | No | string | `en` | Language code. Currently supports English (`en`), French (`fr`), Dutch (`de`) and Spanish (`es` or `es-es`) |
-| `format` | No | string | `YYYY-MM-DD` | Date format to accept |
-| `inputPlaceholder` | No | string | `YYYY-MM-DD` | A placeholder in the date component input |
-| `firstDay` | No | number | `0` | Defines the first day of the week on the calendar, 0 being Sunday and 6 being Saturday |
+| Option              | Required | Type    | Default             | Notes                                                                                                                                          |
+| ------------------- | -------- | ------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | No       | string  | `fieldFrom-fieldTo` | id of the control                                                                                                                              |
+| `title`             | No       | string  | `NoTitle`           | Specifies the title to display at the top of the Component                                                                                     |
+| `startCaption`      | No       | string  | `Start`             | Specifies what the caption of "start" should be                                                                                                |
+| `endCaption`        | No       | string  | `End`               | Specifies what the caption of "end" should be                                                                                                  |
+| `todayCaption`      | No       | string  | `Today`             | Specifies what the caption of "today" radio button should be                                                                                   |
+| `thisWeekCaption`   | No       | string  | `This Week`         | Specifies what the caption of "thisweek" radio button should be                                                                                |
+| `lastWeekCaption`   | No       | string  | `Last Week`         | Specifies what the caption of "lastweek" radio button should be                                                                                |
+| `thisMonthCaption`  | No       | string  | `This Month`        | Specifies what the caption of "thismonth" radio button should be                                                                               |
+| `fieldFrom`         | Yes      | string  | `@sysdate`          | Index field to use for the from date                                                                                                           |
+| `fieldTo`           | Yes      | string  | `@sysdate`          | Index field to use for the to date                                                                                                             |
+| `enableRadioButton` | No       | boolean | `false`             | Show radiobuttons with today, thisweek etc.                                                                                                    |
+| `langCode`          | No       | string  | `en`                | Language code. Currently supports English (`en`), French (`fr`), Dutch (`de`) and Spanish (`es` or `es-es`)                                    |
+| `format`            | No       | string  | `YYYY-MM-DD`        | Date format to accept                                                                                                                          |
+| `inputPlaceholder`  | No       | string  | `YYYY-MM-DD`        | A placeholder in the date component input                                                                                                      |
+| `firstDay`          | No       | number  | `0`                 | Defines the first day of the week on the calendar, 0 being Sunday and 6 being Saturday                                                         |
+| `readOnlyInput`     | No       | boolean | `true`              | Sets the `readonly` attribute on the date picker input field. **Not currently available in the radio picker.**                                 |
+| `yearsBack`         | No       | number  | `100`               | A positive number that defines by how many years we want to go back from the current year. **Not currently available in the radio picker.**    |
+| `yearsAhead`      | No       | number  | `0`                 | A positive number that defines by how many years we want to go forward from the current year. **Not currently available in the radio picker.** |
 
 ## Regarding localization
 

@@ -8,25 +8,34 @@ export interface IDatePickerOptions {
     onChange?: (datePicker: DatePicker) => void,
     langCode?: string,
     format?: string,
+    readOnlyInput: boolean,
+    yearsBack?: number,
+    yearsAhead?: number,
 }
 
 export class DatePicker implements IFormWidget, IFormWidgetSettable {
     private element: HTMLInputElement;
     private picker: Pikaday;
     private wasReset = true;
-    protected options:IDatePickerOptions = {
+    protected options: IDatePickerOptions = {
         onChange: (datePicker: DatePicker) => { },
         firstDay: 0,
         langCode: 'en',
         format: 'YYYY-MM-DD',
+        readOnlyInput: false,
+        yearsBack: 100,
+        yearsAhead: 0,
     }
 
     constructor(options: IDatePickerOptions) {
-        const { onChange, firstDay, langCode, format } = options;
+        const { onChange, firstDay, langCode, format, readOnlyInput, yearsBack, yearsAhead } = options;
         this.options.onChange = onChange || this.options.onChange;
         this.options.firstDay = firstDay || this.options.firstDay;
         this.options.langCode = langCode || this.options.langCode;
         this.options.format = format;
+        this.options.readOnlyInput = readOnlyInput;
+        this.options.yearsBack = yearsBack;
+        this.options.yearsAhead = yearsAhead;
         this.buildContent();
     }
 
@@ -91,12 +100,14 @@ export class DatePicker implements IFormWidget, IFormWidgetSettable {
     }
 
     protected buildContent() {
+        const currentYear = new Date().getFullYear();
         this.element = <HTMLInputElement>$$('input', { className: 'coveo-button', 'aria-label': l('Date') }).el;
-        this.element.readOnly = true;
+        this.element.readOnly = this.options.readOnlyInput;
         this.picker = new Pikaday({
             firstDay: this.options.firstDay,
             field: this.element,
             format: this.options.format,
+            yearRange: [currentYear - Math.abs(this.options.yearsBack), currentYear + Math.abs(this.options.yearsAhead)],
             onSelect: () => {
                 this.wasReset = false;
                 this.options.onChange.call(this, this);

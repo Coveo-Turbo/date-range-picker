@@ -43,7 +43,9 @@
     <div class="coveo-main-section">
       <div class="coveo-facet-column">
         <div class="CoveoDateRangePicker" data-first-day="1" data-format="DD-MM-YYYY"
-          data-input-placeholder="DD-MM-YYYY" data-title="Date"></div>
+          data-input-placeholder="DD-MM-YYYY" data-title="Date" data-read-only-input="false" data-years-back="20"
+          data-years-ahead="5">
+        </div>
         <div class="CoveoDateRangePicker" data-id='daterange2' data-enable-radio-button="true" data-title="Date"></div>
         <div class="CoveoDynamicFacet" data-title="Type" data-field="@objecttype" data-tab="All"></div>
         <div class="CoveoDynamicFacet" data-title="FileType" data-field="@filetype" data-tab="All"></div>
@@ -100,10 +102,14 @@
                 </div>
                 <div class="coveo-result-row" style="margin-top:10px;">
                   <div class="coveo-result-cell">
-                    <span class="CoveoFieldValue" data-field="@author" data-text-caption="Author" style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@source" data-text-caption="Source" style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@language" data-text-caption="Language" style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@filetype" data-text-caption="File Type" style="margin-right:30px;"></span>
+                    <span class="CoveoFieldValue" data-field="@author" data-text-caption="Author"
+                      style="margin-right:30px;"></span>
+                    <span class="CoveoFieldValue" data-field="@source" data-text-caption="Source"
+                      style="margin-right:30px;"></span>
+                    <span class="CoveoFieldValue" data-field="@language" data-text-caption="Language"
+                      style="margin-right:30px;"></span>
+                    <span class="CoveoFieldValue" data-field="@filetype" data-text-caption="File Type"
+                      style="margin-right:30px;"></span>
                   </div>
                 </div>
                 <div class="coveo-result-row" style="margin-top:10px;">
