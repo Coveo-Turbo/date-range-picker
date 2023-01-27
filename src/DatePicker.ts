@@ -1,5 +1,5 @@
 import { IFormWidget, IFormWidgetSettable, $$, DateUtils, l, Assert } from 'coveo-search-ui';
-import * as Pikaday from 'pikaday';
+import {Pikaday} from 'pikaday-no-moment';
 declare function require(name: string);
 import locales from './utils/locales';
 
