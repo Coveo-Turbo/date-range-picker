@@ -23,7 +23,7 @@
       // Coveo.SearchEndpoint.endpoints['default'].options.queryStringArguments.viewAllContent = 'true';
       Coveo.init(document.getElementById('search'), {
         Analytics: {
-          searchHub: demoConfig.searchHub,
+          searchHub: 'communitySearchCoveo',
         }
       });
     })
@@ -31,25 +31,23 @@
 </head>
 
 <body>
-  <div id="search" class="CoveoSearchInterface" data-enable-history="true">
-    <!-- <div class="CoveoFolding"></div> -->
-    <div class="CoveoAnalytics"></div>
-    <div class="coveo-tab-section">
-      <a class="CoveoTab" data-id="All" data-caption="All Content"></a>
-    </div>
+  <div id="search" class="CoveoSearchInterface" data-enable-history="true" data-maximum-age="100" data-excerpt-length="">
+    <div class="CoveoFoldingForThread" data-field="@foldfoldingfield" data-enable-expand="true" data-parent="@foldchildfield" data-child="@foldparentfield" data-range="0"></div>
+    <div class="CoveoAnalytics" data-search-hub="communitySearchCoveo"></div>
     <div class="coveo-search-section">
       <div class="CoveoSearchbox" data-enable-omnibox="true"></div>
     </div>
+    <div class="CoveoPromotedResultsBadge" data-show-badge-for-featured-results="true" data-color-for-featured-results="orange"></div>
     <div class="coveo-main-section">
       <div class="coveo-facet-column">
-        <div class="CoveoDateRangePicker" data-first-day="1" data-format="DD-MM-YYYY"
-          data-input-placeholder="DD-MM-YYYY" data-title="Date" data-read-only-input="false" data-years-back="20"
-          data-years-ahead="5">
-        </div>
-        <div class="CoveoDateRangePicker" data-id='daterange2' data-enable-radio-button="true" data-title="Date"></div>
-        <div class="CoveoDynamicFacet" data-title="Type" data-field="@objecttype" data-tab="All"></div>
-        <div class="CoveoDynamicFacet" data-title="FileType" data-field="@filetype" data-tab="All"></div>
-        <div class="CoveoDynamicFacet" data-title="Author" data-field="@author" data-tab="All"></div>
+        <div class="CoveoDateRangePicker" data-title="Published Date" data-field-from="@sfsorted_published_datetime__c" data-field-to="@sfsorted_published_datetime__c"> </div>
+
+        <div class="CoveoFacet" data-title="Employee Channel" data-field="@sfemployee_channel__c" data-tab="All" data-number-of-values="6"></div>
+        <div class="CoveoFacet" data-title="Restricted" data-field="@sfdcinternalprivate" data-number-of-values="6"></div>
+        <div class="CoveoFacet" data-title="Article Type" data-field="@sfarticle_record_type__c" data-tab="All" data-number-of-values="8"></div>
+        <div class="CoveoFacet" data-title="Keywords" data-field="@sfkeywords__c" data-tab="All" data-number-of-values="5" data-injection-depth="" data-number-of-values-in-breadcrumb="" data-page-size="" data-sort-criteria="score"></div>
+        <div class="CoveoFacet" data-title="File Type" data-field="@filetype" data-number-of-values="4" data-value-caption="{&quot;SalesforceItem&quot;:&quot;EDGE Knowledge Article&quot;}"></div>
+        <div class="CoveoFacet" data-title="Retail Lending Line of Business" data-field="@sfretail_lending_lob__c" data-number-of-values="6"></div>
       </div>
       <div class="coveo-results-column">
         <div class="CoveoShareQuery"></div>
@@ -62,8 +60,9 @@
         <div class="CoveoDidYouMean"></div>
         <div class="coveo-results-header">
           <div class="coveo-summary-section">
-            <span class="CoveoQuerySummary"></span>
-            <span class="CoveoQueryDuration"></span>
+            <span class="CoveoQuerySummary">
+                    <div class="coveo-show-if-no-results"></div>
+                 </span>
           </div>
           <div class="coveo-result-layout-section">
             <span class="CoveoResultLayout"></span>
@@ -74,53 +73,428 @@
           </div>
         </div>
         <div class="CoveoHiddenQuery"></div>
+        <div class="CoveoDidYouMean" data-enable-auto-correction="false"></div>
         <div class="CoveoErrorReport" data-pop-up="false"></div>
-        <div class="CoveoResultList" data-layout="list" data-wait-animation="fade"
-          data-auto-select-fields-to-include="true">
-          <script id="Default" class="result-template" type="text/html" data-layout="list">
-            <div class="coveo-result-frame">
-              <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
-                <span class="CoveoIcon" data-small="true" data-with-label="false"></span>
-                <div class="CoveoQuickview"></div>
+        <div class="CoveoResultList" data-layout="list" data-wait-animation="fade" data-auto-select-fields-to-include="false" data-infinite-scroll-page-size="">
+          <script id="SalesforceKnowledgeArticleAnnEventMgmt" class="result-template" type="text/html" data-field-sfevent_management__c="true" data-field-sfarticle_record_type__c="Announcement">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--	<span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="warning" fill="#cc0000" width="20px" height="20px">
+                    <path d="M23.7 19.6L13.2 2.5c-.6-.9-1.8-.9-2.4 0L.3 19.6c-.7 1.1 0 2.6 1.1 2.6h21.2c1.1 0 1.8-1.5 1.1-2.6zM12 18.5c-.8 0-1.4-.6-1.4-1.4s.6-1.4 1.4-1.4 1.4.6 1.4 1.4-.6 1.4-1.4 1.4zm1.4-4.2c0 .3-.2.5-.5.5h-1.8c-.3 0-.5-.2-.5-.5v-6c0-.3.2-.5.5-.5h1.8c.3 0 .5.2.5.5v6z"></path>
+                  </svg>
+                </div>
+                <span class="CoveoSalesforceQuickview"></span>
               </div>
               <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
                 <div class="coveo-result-row" style="margin-top:0;">
-                  <div class="coveo-result-cell" style="vertical-align:top;font-size:16px;" role="heading"
-                    aria-level="2">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/announcementDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span style="font-weight: bold;" class="CoveoFieldValue" data-field="@sfarticle_record_type__c" data-text-caption="Event Management" style="margin-right:30px;"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticleAnn" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Announcement">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--	<span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="announcement" fill="#f58025" width="20px" height="20px">
+                    <path d="M10.5 21l-.6-.5c-.7-.5-.7-1.4-.7-1.9v-1.3c0-.4-.3-.7-.7-.7H5.8c-.4 0-.7.3-.7.7v3.6c0 1.2.7 2.2 1.9 2.2h2.2c1.4 0 1.5-.9 1.5-.9s.2-.9-.2-1.2zM20.8 8.3V2c0-1.1-1.4-1.4-2.2-.7l-4.1 3.9c-.6.5-1.4.8-2.3.8h-7C2.8 6 .9 8.1.9 10.5v.1c0 2.4 1.9 4.2 4.3 4.2h7c.9 0 1.7.3 2.4.9l4 4c.8.7 2.2.4 2.2-.7v-6.3c1.4 0 2.2-.9 2.2-2.2 0-1.2-.8-2.2-2.2-2.2z"></path>
+                  </svg>
+                </div>
+                <span class="CoveoSalesforceQuickview"></span>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/announcementDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticleDD" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Department Directory">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--                    <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="log_a_call" fill="#0069aa" width="20px" height="20px">
+                    <path d="M19.8.9H6.2C5 .9 4 2 4 3.1v.8h-.7c-.8 0-1.5.6-1.5 1.5s.7 1.4 1.5 1.4H4v3.7h-.7c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5H4v3.7h-.7c-.8 0-1.5.6-1.5 1.4 0 .9.7 1.5 1.5 1.5H4v.8c0 1.1 1 2.2 2.2 2.2h13.6c1.2 0 2.4-1.1 2.4-2.3V3c0-1.2-1.2-2.1-2.4-2.1zm-1.2 14.9l-1.1 1c-.2.3-.5.4-.8.4-2.4-.2-4.6-1.3-6.2-2.9s-2.7-3.9-2.8-6.4c0-.3.1-.6.3-.8l1-1c.5-.5 1.2-.5 1.7.1l.9 1.2c.3.4.3 1 0 1.4l-.8 1.1c0 .2 0 .4.1.5l1.7 1.9 1.8 1.7c.1.1.3.1.5 0l1.1-.8c.4-.3.9-.3 1.4 0l1.1 1c.5.3.5 1.1.1 1.6z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/departmentDirectoryDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                    <div class="coveo-result-row">
+                    </div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticleOP" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Offer and Promotion">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--                   <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="campaign" fill="#fbb03f" width="20px" height="20px">
+                    <path d="M12 .4C5.6.4.4 5.6.4 12S5.6 23.6 12 23.6 23.6 18.4 23.6 12 18.4.4 12 .4zm0 20.9c-5.1 0-9.3-4.2-9.3-9.3S6.9 2.7 12 2.7s9.3 4.2 9.3 9.3-4.2 9.3-9.3 9.3zM12 5c-3.8 0-7 3.2-7 7s3.2 7 7 7 7-3.2 7-7-3.2-7-7-7zm0 11.7c-2.5 0-4.7-2.1-4.7-4.7S9.5 7.3 12 7.3s4.7 2.2 4.7 4.7-2.2 4.7-4.7 4.7zm0-7c-1.3 0-2.3 1.1-2.3 2.3s1.1 2.3 2.3 2.3 2.3-1.1 2.3-2.3-1-2.3-2.3-2.3z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/offerAndPromotionDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                    <div class="coveo-result-row">
+                    </div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticleO" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Other">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--                    <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="pin" fill="#abb0b4" width="20px" height="20px">
+                    <path d="M22.8 7.1L16.6.9C16 .2 15 .2 14.3.9s-.6 1.6 0 2.3l.3.3-7.4 4.9-.3-.2c-.6-.6-1.6-.6-2.3 0s-.6 1.7 0 2.3l3.3 3.3-6.8 6.9c-.6.6-.6 1.7 0 2.3.7.7 1.7.7 2.4 0l6.8-6.8 2.9 2.9c.6.6 1.7.6 2.3 0s.7-1.7 0-2.3l-.2-.3L20.2 9l.3.3c.6.7 1.7.7 2.3 0 .6-.5.6-1.5 0-2.2z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/otherDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                    <div class="coveo-result-row">
+                    </div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                          class="CoveoResultFolding"
+                          data-result-template-id="FoldedAttachments"
+                          data-more-caption="Show All Attachments"
+                          data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticleP" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Procedure">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--                    <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="knowledge_base" fill="#26a9e0" width="20px" height="20px">
+                    <path d="M4.4 16.2h6c.4 0 .7-.4.7-.7V4.6c0-.8-.9-1.4-1.5-1.4H4.4c-.4 0-.7.4-.7.7v11.6c0 .3.3.7.7.7zM22.7 5.4c-.3-.1-.5.1-.5.4v11.5c0 .4-.4.7-.7.7h-19c-.3 0-.7-.3-.7-.7V5.9c0-.4-.3-.6-.6-.5-.7.4-1.2 1.1-1.2 2V18c0 1 .8 1.8 1.8 1.8h7.7c.3 0 .7.4.7.7s.3.7.6.7h2.4c.3 0 .6-.3.6-.7s.4-.7.7-.7h7.7c1 0 1.8-.8 1.8-1.8V7.4c0-1-.3-1.8-1.3-2zm-9.1 10.8h6c.4 0 .7-.4.7-.7V3.9c0-.3-.3-.7-.7-.7h-5.2c-.7 0-1.5.6-1.5 1.4v10.9c0 .3.3.7.7.7z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/procedureDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                    <div class="coveo-result-row">
+                    </div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                          </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="SalesforceKnowledgeArticlePP" class="result-template" type="text/html" data-field-sfarticle_record_type__c="Product and Pricing">
+            <div class="coveo-result-frame" style="padding:0 16px 16px 0;">
+              <div class="coveo-result-cell">
+  
+                <!--                    <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true"></span>	-->
+                <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" id="layout" fill="#6db33f" width="20px" height="20px">
+                    <path d="M22.2 23.1H1.8c-.5 0-.9-.4-.9-.9V1.8c0-.5.4-.9.9-.9h20.4c.5 0 .9.4.9.9v20.4c0 .5-.4.9-.9.9zM2.8 21.2h18.4V2.8H2.8v18.4zM18 9.2H6c-.3 0-.5-.2-.5-.4V6c0-.3.2-.5.5-.5h12c.3 0 .5.2.5.5v2.8c0 .2-.2.4-.5.4zm-9.2 9.3H6c-.3 0-.5-.2-.5-.5v-5.5c0-.3.2-.5.5-.5h2.8c.2 0 .4.2.4.5V18c0 .3-.2.5-.4.5zm9.2 0h-5.5c-.3 0-.5-.2-.5-.5v-5.5c0-.3.2-.5.5-.5H18c.3 0 .5.2.5.5V18c0 .3-.2.5-.5.5z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell coveo-no-wrap" style="vertical-align: top; font-size: 16px;">
+                    <a class="CoveoResultLink" data-href-template="/s/productAndPricingDetailPage?name=${raw.sfurlname}"></a>
+                  </div>
+                  <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
+                    <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
+                    <div class="coveo-result-row">
+                    </div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:8px;">
+                  <div class="coveo-result-cell" style="line-height:1.5em;">
+                    <div class="CoveoExcerpt"></div>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:12px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-text-caption="Article Type" data-field="@sfarticle_record_type__c"></span><br>
+                    <span class="CoveoFieldValue" data-text-caption="Employee Channel" data-field="@sfemployee_channel__c"></span>
+                    <table class="CoveoFieldTable" data-minimized-by-default="true">
+                      <tbody>
+                        <tr data-caption="Keywords" data-field="@sfkeywords__c"></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="coveo-result-row" style="margin-top:8px;">
+                  </div>
+                </div>
+                <div class="coveo-result-row">
+                  <div class="coveo-result-cell" style="padding-top:5px; padding-bottom:5px; font-size:13px;">
+                    <span
+                            class="CoveoResultFolding"
+                            data-result-template-id="FoldedAttachments"
+                            data-more-caption="Show All Attachments"
+                            data-less-caption="Hide Attachments">
+                         </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </script>
+          <script id="Default" class="result-template" type="text/html" data-layout="list">
+            <div class="coveo-result-frame">
+              <div class="coveo-result-cell" style="vertical-align:top;text-align:center;width:32px;">
+                <span class="CoveoIcon coveo-small coveo-icon objecttype case coveo-icon-with-caption-overlay" data-small="true" data-with-label="false"></span>
+                <div class="CoveoSalesforceQuickview"></div>
+              </div>
+              <div class="coveo-result-cell" style="vertical-align: top;padding-left: 16px;">
+                <div class="coveo-result-row" style="margin-top:0;">
+                  <div class="coveo-result-cell" style="vertical-align:top;font-size:16px;">
                     <a class="CoveoResultLink"></a>
                   </div>
                   <div class="coveo-result-cell" style="width:120px;text-align:right;font-size:12px">
                     <div class="coveo-result-row">
-                      <span class="CoveoFieldValue" data-field="@date" data-helper="date"></span>
+                      <span class="CoveoFieldValue" data-field="@sfsorted_published_datetime__c" data-helper="dateTime" data-helper-options-omit-year-if-current-one="false" data-helper-options-include-time-if-today="true" data-helper-options-include-time-if-this-week="false" data-helper-options-use-weekday-if-this-week="false"></span>
                     </div>
                   </div>
                 </div>
                 <div class="coveo-result-row" style="margin-top:10px;">
                   <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-field="@sfrecordtypename" data-text-caption="Article Type" style="margin-right:30px;"></span>
+                    <span class="CoveoFieldValue" data-text-caption="ArtType" data-field="@sfarticle_record_type__c"></span>
+                    <span class="CoveoFieldValue" data-field="@sfmarket" data-text-caption="Market" style="margin-right:30px;"></span>
+                  </div>
+                </div>
+                <div class="coveo-result-row" style="margin-top:10px;">
+                  <div class="coveo-result-cell">
+                    <span class="CoveoFieldValue" data-field="@sfsummary" data-text-caption="Summary" style="margin-right:30px;"></span>
                     <span class="CoveoExcerpt"></span>
                   </div>
                 </div>
                 <div class="coveo-result-row" style="margin-top:10px;">
-                  <div class="coveo-result-cell">
-                    <span class="CoveoFieldValue" data-field="@author" data-text-caption="Author"
-                      style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@source" data-text-caption="Source"
-                      style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@language" data-text-caption="Language"
-                      style="margin-right:30px;"></span>
-                    <span class="CoveoFieldValue" data-field="@filetype" data-text-caption="File Type"
-                      style="margin-right:30px;"></span>
-                  </div>
                 </div>
-                <div class="coveo-result-row" style="margin-top:10px;">
-                  <div class="coveo-result-cell">
-                    <div class="CoveoPrintableUri"></div>
-                  </div>
+              </div>
+            </div>
+          </script>
+          <script id="FoldedAttachments" class="result-template" type="text/html" data-field-documenttype="ContentDocumentLink" data-layout="list">
+            <div class="coveo-result-frame">
+              <div class="coveo-result-row">
+                <div class="coveo-result-cell">
+                  <b><span class="CoveoFieldValue" data-field="@title"></span></b>
                 </div>
-                <div class="coveo-result-row">
-                  <div class="coveo-result-cell">
-                    <div class="CoveoMissingTerms"></div>
-                  </div>
+              </div>
+              <div class="coveo-result-row">
+                <div class="coveo-result-cell">
+                  <span class="CoveoExcerpt"></span>
+                </div>
+              </div>
+              <div class="coveo-result-row">
+                <div class="coveo-result-cell">
+                  <span class="CoveoFieldValue" data-text-caption="File Type" data-field="@filetype"></span>
                 </div>
               </div>
             </div>

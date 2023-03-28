@@ -305,8 +305,28 @@ export class DateRangePicker extends Component {
     $$(this.eraserElement as HTMLElement).toggleClass('coveo-facet-header-eraser-visible', isActive);
   }
 
+  private updateMaxDateRange (range: IRadioSelectEventArgs) : void {
+    if (range.to == -1) {
+      this.fromInput.setMaxDate(new Date())
+    }
+    else {
+      this.fromInput.setMaxDate(new Date(range.to))
+    }
+
+    if (range.from == -1) {
+      this.toInput.setMinDate(null)
+    }
+    else {
+      this.toInput.setMinDate(new Date(range.from))
+    }
+  }
+
   private onChange(range: IRadioSelectEventArgs, actionCause: string, executeQuery: boolean = true): void {
     this.queryStateModel.set(this.rangePickerQueryStateAttribute, range);
+
+    
+    this.updateMaxDateRange(range);
+
     if (executeQuery) {
       this.triggerNewQuery(() =>
         this.usageAnalytics.logCustomEvent(

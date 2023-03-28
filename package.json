@@ -18,13 +18,14 @@
         "dist"
     ],
     "dependencies": {
-        "@coveops/turbo-core": "^1.1.1",
-        "coveo-search-ui": "^2.10085.2",
+        "@coveops/turbo-core": "^1.2.1",
+        "coveo-search-ui": "^2.10107.0",
         "pikaday-no-moment": "^1.8.2",
         "svg-inline-loader": "^0.8.2"
     },
     "devDependencies": {
-        "@coveops/cli": "^0.16.0",
-        "@types/pikaday": "^1.7.0"
+        "@coveops/cli": "^0.17.0",
+        "@types/pikaday": "^1.7.6",
+        "webpack-merge": "^5.8.0"
     }
 }

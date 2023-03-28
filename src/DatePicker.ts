@@ -91,6 +91,16 @@ export class DatePicker implements IFormWidget, IFormWidgetSettable {
         this.wasReset = false;
     }
 
+    public setMaxDate(date: Date) {
+        // Assert.exists(date);
+        this.picker.setMaxDate(date);
+    }
+
+    public setMinDate(date: Date) {
+        // Assert.exists(date);
+        this.picker.setMinDate(date);
+    }
+
     /**
      * Gets the element on which the date picker is bound.
      * @returns {HTMLInputElement} The date picker element.
@@ -107,6 +117,7 @@ export class DatePicker implements IFormWidget, IFormWidgetSettable {
             firstDay: this.options.firstDay,
             field: this.element,
             format: this.options.format,
+            maxDate: new Date(), 
             yearRange: [currentYear - Math.abs(this.options.yearsBack), currentYear + Math.abs(this.options.yearsAhead)],
             onSelect: () => {
                 this.wasReset = false;
